@@ -14,6 +14,10 @@
 #include "Shader.h"
 #include "SOIL2\SOIL2.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 const GLint SCREENT_WIDTH = 800, SCREENT_HEIGHT = 600;
 
 
@@ -65,11 +69,11 @@ int main()
 	 
 	GLfloat vertex[] = 
 	{ 
-		// Postion              // Color			// Texture Coordinates
-		0.5f, 0.5f, 0.0f,		1.0f,0.0f,0.0f,		1.0f,1.0f,	// Top
-		0.5f, -0.5f, 0.0f,		1.0f,1.0f,1.0f,		1.0f,0.0f,  // Right
-		-0.5f,-0.5f, 0.0f,		1.0f,0.0f,0.0f,		0.0f,0.0f,  // Left
-		-0.5f, 0.5f, 0.0f,		1.0f,0.0f,1.0f,		0.0f,1.0f	//
+		// Positions          // Colors           // Texture Coords
+		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Top Right
+		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom Right
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left
 	};
 
 	GLuint indices[] =
@@ -135,7 +139,17 @@ int main()
 		glClearColor(0.2f,0.3f,0.3f,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
+		// Draw the triangle
 		ourShader.Use();
+
+		// Create transformations
+		glm::mat4 transform;
+		transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+		transform = glm::rotate(transform, (GLfloat)glfwGetTime() * -5.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		// Get matrix's uniform location and set matrix
+		GLint transformLocation = glGetUniformLocation(ourShader.Program, "transform");
+		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
