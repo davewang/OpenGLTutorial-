@@ -9,8 +9,8 @@
 
 enum Camera_Movement
 {
-	FORWORD,
-	BACKEND,
+	FORWARD,
+	BACKWARD,
 	LEFT,
 	RIGHT
 };
@@ -77,11 +77,11 @@ public:
 	void ProcessKeyboard(Camera_Movement direction, GLfloat deltaTime)
 	{
 		GLfloat velocity = this->movementSpeed * deltaTime;
-		if (FORWORD == direction) 
+		if (FORWARD == direction) 
 		{
 			this->position += this->front*velocity;
 		}
-		if (BACKEND == direction)
+		if (BACKWARD == direction)
 		{
 			this->position -= this->front*velocity;
 		}
@@ -136,6 +136,11 @@ public:
 	GLfloat GetZoom()
 	{
 		return this->zoom;
+	}
+
+	glm::vec3 GetPosition()
+	{
+		return this->position;
 	}
 
 };
