@@ -177,8 +177,8 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// add after the code is displayed and working
-		//lightPos.x -= 0.01f;
-		//lightPos.z -= 0.01f;
+		lightPos.x -= 0.005f;
+		lightPos.z -= 0.005f;
 
 		// Calculate deltatime of current frame
 		GLfloat currentFrame = glfwGetTime();
@@ -195,14 +195,26 @@ int main()
 
 		// Use cooresponding shader when setting uniforms/drawing objects
 		lightingShader.Use();
-		GLint objectColorLoc = glGetUniformLocation(lightingShader.Program, "objectColor");
-		GLint lightColorLoc = glGetUniformLocation(lightingShader.Program, "lightColor");
-		GLint lightPosLoc = glGetUniformLocation(lightingShader.Program, "lightPos");
+		GLint lightPosLoc = glGetUniformLocation(lightingShader.Program, "light.position");
 		GLint viewPosLoc = glGetUniformLocation(lightingShader.Program, "viewPos");
-		glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
-		glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
 		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
 		glUniform3f(viewPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
+
+		glm::vec3 lightColor;
+		lightColor.r = sin(glfwGetTime()*2.0f);
+		lightColor.g = sin(glfwGetTime()*0.7f);
+		lightColor.b = sin(glfwGetTime()*1.3f);
+
+		glm::vec3 diffuseCollor = lightColor * glm::vec3(0.5f);
+		glm::vec3 ambientCollor = diffuseCollor * glm::vec3(0.2f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "light.ambient"), ambientCollor.r, ambientCollor.g, ambientCollor.b);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "light.diffuse"), diffuseCollor.r, diffuseCollor.g, diffuseCollor.b);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "light.specular"), 1.0f, 1.0f, 1.0f);
+
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "material.ambient"), 1.0f, 0.5f, 0.31f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "material.diffuse"), 1.0f, 0.5f, 0.31f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "material.specular"), 0.5f, 0.5f, 0.5f);
+		glUniform1f(glGetUniformLocation(lightingShader.Program, "material.shininess"), 1.0f);
 
 		// Create camera transformations
 		glm::mat4 view;
