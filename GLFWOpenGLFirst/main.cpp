@@ -94,7 +94,7 @@ int main()
 
 	// Build and compile our shader program
 	Shader lightingShader("lighting.vs", "lighting.frag");
-	Shader lampShader("lamp.vs", "lamp.frag");
+	//Shader lampShader("lamp.vs", "lamp.frag");
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
 	GLfloat vertices[] =
@@ -143,6 +143,20 @@ int main()
 		-0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,     0.0f,  1.0f
 	};
 
+	// Positions all containers
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f,   0.0f,   0.0f),
+		glm::vec3(2.0f,   5.0f,   -15.0f),
+		glm::vec3(-1.5f,  -2.2f,  -2.5f),
+		glm::vec3(-3.8f,  -2.0f,  -12.3f),
+		glm::vec3(2.4f,   -0.4f,  -3.5f),
+		glm::vec3(-1.7f,  3.0f,   -7.5f),
+		glm::vec3(1.3f,   -2.0f,  -2.5f),
+		glm::vec3(1.5f,   2.0f,   -2.5f),
+		glm::vec3(1.5f,   0.2f,   -1.5f),
+		glm::vec3(-1.3f,  1.0f,   -1.5f)
+	};
+
 	// First, set the container's VAO (and VBO)
 	GLuint VBO, containerVAO;
 	glGenVertexArrays(1, &containerVAO);
@@ -165,7 +179,7 @@ int main()
 	glEnableVertexAttribArray(2);
 
 	glBindVertexArray(0);
-
+	/*
 	// Then, we set the light's VAO (VBO stays the same. After all, the vertices are the same for the light object (also a 3D cube))
 	GLuint lightVAO;
 	glGenVertexArrays(1, &lightVAO);
@@ -176,6 +190,7 @@ int main()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)0); // Note that we skip over the normal vectors
 	glEnableVertexAttribArray(0);
 	glBindVertexArray(0);
+	*/
 
 	GLuint diffuseMap, specularMap;
 	glGenTextures(1, &diffuseMap);
@@ -238,9 +253,11 @@ int main()
 
 		// Use cooresponding shader when setting uniforms/drawing objects
 		lightingShader.Use();
-		GLint lightPosLoc = glGetUniformLocation(lightingShader.Program, "light.position");
+		//GLint lightPosLoc = glGetUniformLocation(lightingShader.Program, "light.position");
+		GLint lightDirLoc = glGetUniformLocation(lightingShader.Program, "light.direction");
 		GLint viewPosLoc = glGetUniformLocation(lightingShader.Program, "viewPos");
-		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+		//glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+		glUniform3f(lightDirLoc, -0.2f,1.0f,-0.3f);
 		glUniform3f(viewPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
 
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "light.ambient"),0.2f,0.2f,0.2f);
@@ -269,13 +286,30 @@ int main()
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
+		glm::mat4 model;
+		glBindVertexArray(containerVAO);
+
+		for (GLuint i = 0; i < 10; i++)
+		{
+			model = glm::mat4();
+			model = glm::translate(model, cubePositions[i]);
+
+			GLfloat angle = 20.0f * i;
+			model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5));
+			glUniformMatrix4fv(modelLoc,1,GL_FALSE,glm::value_ptr(model));
+			
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		glBindVertexArray(0);
+		/*
 		// Draw the container (using container's vertex attributes)
 		glBindVertexArray(containerVAO);
 		glm::mat4 model;
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
-
+		*/
+		/*
 		// Also draw the lamp object, again binding the appropriate shader
 		lampShader.Use();
 		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
@@ -293,13 +327,14 @@ int main()
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
+		*/
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
 	}
 
 	glDeleteVertexArrays(1, &containerVAO);
-	glDeleteVertexArrays(1, &lightVAO);
+	//glDeleteVertexArrays(1, &lightVAO);
 	glDeleteBuffers(1, &VBO);
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.
